@@ -40,7 +40,7 @@ function PowerEditForm() {
       }),
     }).then((r) => {
       if (r.ok) {
-        history.push(`/powers/${power.id}`);
+        history(`/powers/${power.id}`);
       } else {
         r.json().then((err) =>
           setPower({ data: power, errors: err.errors, status: "rejected" })

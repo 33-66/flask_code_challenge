@@ -37,7 +37,7 @@ function HeroPowerForm() {
       body: JSON.stringify(formData),
     }).then((r) => {
       if (r.ok) {
-        history.push(`/heroes/${heroId}`);
+        history(`/heroes/${heroId}`);
       } else {
         r.json().then((err) => setFormErrors(err.errors));
       }

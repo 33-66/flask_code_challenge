@@ -1,7 +1,8 @@
+#!/usr/bin/env python3
 from flask_cors import CORS
 from flask import Flask, make_response, jsonify, request
 from flask_migrate import Migrate
-from models import db, Hero, Power, Hero_power
+from models import db, Hero, Power,Hero_power
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
@@ -11,20 +12,14 @@ db.init_app(app)
 CORS(app)
 migrate = Migrate(app, db)
 
+
 @app.route("/heroes", methods=["GET"])
 def get_heroes():
-    heroes_list = []
-    for hero in Hero.query.all():
-        hero_dict = {
-            "id": hero.id,
-            "name": hero.name,
-            "super_name": hero.super_name,
-            "powers": [{"id": power.id, "name": power.name, "description": power.description} for power in hero.powers]
-        }
-        heroes_list.append(hero_dict)
+    heroes = Hero.query.all()
+    heroes_list = [{"id": hero.id, "name": hero.name, "super_name": hero.super_name} for hero in heroes]
     return jsonify(heroes_list)
 
-@app.route("/heroes/<int:id>")
+@app.route("/heroes/<int:id>", methods=["GET"])
 def get_hero_by_id(id):
     hero = Hero.query.get(id)
     if hero:
@@ -41,25 +36,17 @@ def get_hero_by_id(id):
 @app.route("/powers", methods=["GET"])
 def get_powers():
     powers = Power.query.all()
-    power_list = []
-    for power in powers:
-        power_dict = {
-            "id": power.id,
-            "name": power.name,
-            "description": power.description
-        }
-        power_list.append(power_dict)
+    power_list = [{"id": power.id, "name": power.name, "description": power.description} for power in powers]
     return jsonify(power_list)
 
-@app.route("/powers/<int:id>")
+@app.route("/powers/<int:id>", methods=["GET"])
 def get_power_by_id(id):
     power = Power.query.get(id)
     if power:
         power_dict = {
             "id": power.id,
             "name": power.name,
-            "description": power.description,
-            "heroes": [{"id": hero.id, "name": hero.name, "super_name": hero.super_name} for hero in power.heroes]
+            "description": power.description
         }
         return jsonify(power_dict)
     else:
@@ -75,6 +62,9 @@ def patch_power(id):
     if not description:
         return jsonify({"error": "Validation error: Description is required"}), 400
 
+    if len(description) < 20:
+        return jsonify({"error": "Validation error: Description must be more than 20 characters long"}), 400
+
     power.description = description
     db.session.commit()
 
@@ -88,28 +78,29 @@ def patch_power(id):
 
 @app.route("/hero_powers", methods=["POST"])
 def post_hero_powers():
-    strength = request.json.get("strength")
-    power_id = request.json.get("power_id")
-    hero_id = request.json.get("hero_id")
+    data = request.json
+    strength = data.get("strength")
+    power_id = data.get("power_id")
+    hero_id = data.get("hero_id")
 
-    if not all([strength, power_id, hero_id]):
-        return jsonify({"errors": ["Validation errors: strength, power_id, and hero_id are required"]}), 400
+    hero = Hero.query.get(hero_id)
+    power = Power.query.get(power_id)
+
+    if not hero or not power:
+        return jsonify({"error": "Hero or Power not found"}), 404
 
     new_hero_power = Hero_power(strength=strength, power_id=power_id, hero_id=hero_id)
     db.session.add(new_hero_power)
     db.session.commit()
 
-    hero = Hero.query.get(hero_id)
-    if hero:
-        hero_dict = {
-            "id": hero.id,
-            "name": hero.name,
-            "super_name": hero.super_name,
-            "powers": [{"id": power.id, "name": power.name, "description": power.description} for power in hero.powers]
-        }
-        return jsonify(hero_dict), 201
-    else:
-        return jsonify({"error": "Hero not found"}), 404
+    hero_dict = {
+        "id": hero.id,
+        "name": hero.name,
+        "super_name": hero.super_name,
+        "powers": [{"id": power.id, "name": power.name, "description": power.description}]
+    }
+
+    return jsonify(hero_dict), 201
 
 if __name__ == "__main__":
     app.run(port=5555, debug=True)
