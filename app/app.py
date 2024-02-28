@@ -1,7 +1,7 @@
 from flask_cors import CORS
 from flask import Flask, make_response, jsonify, request
 from flask_migrate import Migrate
-from models import db, Hero, Power, HeroPower
+from models import db, Hero, Power, Hero_power
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
@@ -95,7 +95,7 @@ def post_hero_powers():
     if not all([strength, power_id, hero_id]):
         return jsonify({"errors": ["Validation errors: strength, power_id, and hero_id are required"]}), 400
 
-    new_hero_power = HeroPower(strength=strength, power_id=power_id, hero_id=hero_id)
+    new_hero_power = Hero_power(strength=strength, power_id=power_id, hero_id=hero_id)
     db.session.add(new_hero_power)
     db.session.commit()
 
