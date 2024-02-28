@@ -100,6 +100,7 @@ def post_hero_powers():
 
     hero_power_dict = {
         "id": new_hero_power.id,
+        
         "strength": new_hero_power.strength,
         "power_id": new_hero_power.power_id,
         "hero_id": new_hero_power.hero_id
