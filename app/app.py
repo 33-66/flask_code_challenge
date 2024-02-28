@@ -5,7 +5,7 @@ from flask_migrate import Migrate
 from models import db, Hero, Power
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////home/simon/Flask/wk1_code _challenge/python-code-challenge-superheroes/code-challenge/app/db/app.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
